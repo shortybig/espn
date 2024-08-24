@@ -28,10 +28,22 @@ historical_standings_initial <-
         
         season_standing_y <- history_neat[[x]]$teams[[y]]$rankCalculatedFinal
         
+        wins_y <- history_neat[[x]]$teams[[y]]$record$overall$wins
+        
+        losses_y <- history_neat[[x]]$teams[[y]]$record$overall$losses
+        
+        ties_y <- history_neat[[x]]$teams[[y]]$record$overall$ties
+        
+        percentage_y <- history_neat[[x]]$teams[[y]]$record$overall$percentage
+        
         data.frame(
           team_name = team_name_y,
           team_owner_id = team_owner_id_y,
-          season_standing = season_standing_y
+          season_standing = season_standing_y,
+          wins = wins_y,
+          losses = losses_y,
+          ties = ties_y,
+          percentage = percentage_y
         )
         
         }, simplify = FALSE) |> 
