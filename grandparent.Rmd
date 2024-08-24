@@ -365,7 +365,7 @@ historical_standings_final |>
     size = 4
   ) +
   ggplot2::labs(
-    title = "All Family Leagues' Winnings",
+    title = "All Family Leagues' Games",
     subtitle = "ordered by total games played",
     x = "Owner",
     y = "Games",
