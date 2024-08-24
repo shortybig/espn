@@ -1,0 +1,88 @@
+---
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup}
+loadNamespace("httr")
+loadNamespace("tidyverse")
+```
+
+```{r get_history}
+history_neat <- 
+  httr::content(httr::GET(
+    url = "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/leagueHistory/437568?view=kona_history_standings"
+  ))
+
+historical_standings_initial <- 
+  sapply(1:length(history_neat), function (x) {
+    
+    fantasy_year_x <- history_neat[[x]]$seasonId
+    
+    season_metrics_x <- 
+      sapply(1:length(history_neat[[x]]$teams), function (y) {
+        
+        team_name_y <- history_neat[[x]]$teams[[y]]$name
+        
+        team_owner_id_y <- history_neat[[x]]$teams[[y]]$owners[[1]]
+        
+        season_standing_y <- history_neat[[x]]$teams[[y]]$rankCalculatedFinal
+        
+        data.frame(
+          team_name = team_name_y,
+          team_owner_id = team_owner_id_y,
+          season_standing = season_standing_y
+        )
+        
+        }, simplify = FALSE) |> 
+      dplyr::bind_rows()
+    
+    season_metrics_x |> 
+      dplyr::mutate(
+        fantasy_year = fantasy_year_x
+      )
+    
+  }, simplify = FALSE) |> 
+  dplyr::bind_rows()
+```
+
+```{r clean_up}
+historical_standings_final <- 
+  historical_standings_initial |> 
+  dplyr::mutate(
+    person = dplyr::case_when(
+      team_owner_id %in% c("{29D7E39A-BEC2-4E20-8D70-ABB906894D16}") ~ "Granddaddy",
+      team_owner_id %in% c("{445EDBE6-4125-4E63-9D9F-4C48BD91B585}") ~ "Mike",
+      team_owner_id %in% c("{4740FEA4-B1BE-408F-91AB-C1BBC92EC9A0}") ~ "Tracy",
+      team_owner_id %in% c("{E8B83555-3FD1-48C2-A3AE-B3CC87ED3212}") ~ "JD",
+      team_owner_id %in% c("{2621F953-1936-4FA5-823E-1CEC0F305205}", "{BD49D75C-78CD-4941-91D0-0CF026FD1881}") ~ "Katie",
+      team_owner_id %in% c("{23182676-C0BC-41AB-B5BB-0FF0DA5BC2FB}") ~ "Daniel",
+      team_owner_id %in% c("{62D8A5A9-AF50-494C-B1B6-082C32F719D4}") ~ "Jason",
+      team_owner_id %in% c("{57531954-5897-448F-A481-7CBFD6A6BF52}", "{AFE1AE40-B461-4FDA-A7C8-E888DC5B2215}") ~ "Cyndi",
+      team_owner_id %in% c("{E6543FB6-B99C-4E5C-95F2-CC40D2268A19}") ~ "Paul",
+      team_owner_id %in% c("{F8A0F4C9-FEA4-4E81-A0F4-C9FEA41E81C5}") ~ "Brynna",
+      team_owner_id %in% c("{E291F6A3-9CD4-4ACD-B35A-C0BB3E6FEE1D}") ~ "Nick",
+      team_owner_id %in% c("{FF9C5795-66C8-4E60-9C57-9566C86E6011}") ~ "Anna",
+      team_owner_id %in% c("{4DB3878D-694E-43D9-9A37-30DDDA9C2D74}") ~ "Eddie",
+      team_owner_id %in% c("{46921C2C-910A-4EE2-921C-2C910ADEE245}") ~ "Nikki",
+      team_owner_id %in% c("{4CF9F045-3A8A-4BFC-9543-3CF5FED37221}") ~ "Patrick",
+      team_owner_id %in% c("{FE5774F6-D319-4236-B048-CF69D25AB276}") ~ "Bud",
+      team_owner_id %in% c("{B5E78402-6C7E-4A28-93EB-7A4C201E4E1B}") ~ "Jeb",
+      team_owner_id %in% c("{B541AE42-A991-4BD1-AA2A-311791D5E357}") ~ "Luke",
+      team_owner_id %in% c("{5EFA6D4C-9A14-49DD-B5B4-68D18F181F12}") ~ "Mikey",
+      TRUE ~ "unknown"
+    )
+  )
+
+historical_standings_final |> 
+  dplyr::filter(person %in% "unknown") |> 
+  dplyr::count(team_owner_id, team_name)
+
+historical_standings_summary <- 
+  historical_standings_int_1 |> 
+  dplyr::group_by(person) |> 
+  dplyr::summarize(
+    overall_rank_median = stats::median(season_standing)
+  )
+```
+
