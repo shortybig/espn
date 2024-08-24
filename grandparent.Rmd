@@ -6,6 +6,7 @@ editor_options:
 ```{r setup}
 loadNamespace("httr")
 loadNamespace("tidyverse")
+loadNamespace("googlesheets4")
 ```
 
 ```{r get_history}
@@ -202,16 +203,38 @@ auction_leauge_historical_standings_summary <-
 
 historical_standings_summary <- 
   historical_standings_final |> 
+  dplyr::mutate(
+    percentage = round(percentage, 4)
+  ) |> 
   dplyr::group_by(person) |> 
   dplyr::summarize(
-    overall_percentage_median = stats::median(percentage),
-    overall_percentage_mean = mean(percentage),
+    percentage_median = stats::median(percentage),
+    percentage_mean = mean(percentage),
     seasons_played = dplyr::n()
   ) |> 
   dplyr::ungroup() |> 
   dplyr::mutate(
-    overall_percentage = overall_percentage_median + overall_percentage_mean
+    overall_percentage = percentage_median + percentage_mean
   ) |> 
   dplyr::arrange(dplyr::desc(overall_percentage))
 ```
 
+```{r upload_google}
+google_sheet <- "https://docs.google.com/spreadsheets/d/1kGHhWmJMOuvvL-9YY-lRBoZ7iCjmNCFU6VR3_vmVyk4"
+
+historical_standings_final |> 
+  dplyr::select(person, dplyr::everything(), -team_owner_id) |> 
+  dplyr::mutate(
+    percentage = round(percentage, 4)
+  ) |> 
+  googlesheets4::write_sheet(
+    ss = google_sheet,
+    sheet = "data_neat"
+  )
+
+historical_standings_summary |> 
+  googlesheets4::write_sheet(
+    ss = google_sheet,
+    sheet = "JB_summary"
+  )
+```
