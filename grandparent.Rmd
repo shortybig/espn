@@ -383,4 +383,45 @@ historical_standings_final |>
     legend.position = "bottom",
     legend.text = ggplot2::element_text(size = 13)
   )
+
+historical_standings_final |> 
+  dplyr::group_by(person) |> 
+  dplyr::summarize(
+    percentage_median = stats::median(percentage)
+  ) |> 
+  dplyr::ungroup() |> 
+  
+  ggplot2::ggplot(ggplot2::aes(forcats::fct_infreq(person, percentage_median))) +
+  ggplot2::geom_bar(
+    ggplot2::aes(
+      y = percentage_median
+    ), 
+    stat = "identity",
+    fill = "#cccccc"
+  ) + 
+  ggplot2::geom_text(
+    ggplot2::aes(
+      label = round(percentage_median, 2)*100,
+      y = percentage_median + max(percentage_median)*0.03,
+    ),
+    size = 4
+  ) +
+  ggplot2::labs(
+    title = "All Family Leagues' Winnings",
+    subtitle = "ties count as half wins",
+    x = "Owner",
+    y = "Median Win (%)"
+  ) +
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(size = 17),
+    plot.subtitle = ggplot2::element_text(size = 15, face = "italic"),
+    axis.title = ggplot2::element_text(hjust = 1, size = 15),
+    axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1, size = 13),
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    panel.background = ggplot2::element_blank(),
+    legend.position = "bottom",
+    legend.text = ggplot2::element_text(size = 13)
+  )
 ```
