@@ -265,6 +265,7 @@ historical_standings_final |>
   ) +
   ggplot2::labs(
     title = "All Family Leagues' Winnings",
+    subtitle = "ties excluded",
     x = "Owner",
     y = "Game Wins"
   ) +
@@ -308,6 +309,7 @@ historical_standings_final |>
   ) +
   ggplot2::labs(
     title = "All Family Leagues' Winnings",
+    subtitle = "ties excluded",
     x = "Owner",
     y = "Game Wins",
     fill = "League"
@@ -410,7 +412,7 @@ historical_standings_final |>
     title = "All Family Leagues' Winnings",
     subtitle = "ties count as half wins",
     x = "Owner",
-    y = "Median Win (%)"
+    y = "Median ESPN Win (%)"
   ) +
   ggplot2::theme(
     plot.title = ggplot2::element_text(size = 17),
@@ -424,4 +426,102 @@ historical_standings_final |>
     legend.position = "bottom",
     legend.text = ggplot2::element_text(size = 13)
   )
+
+historical_standings_final |> 
+  dplyr::group_by(person) |> 
+  dplyr::summarize(
+    percentage_mean = mean(percentage)
+  ) |> 
+  dplyr::ungroup() |> 
+  
+  ggplot2::ggplot(ggplot2::aes(forcats::fct_infreq(person, percentage_mean))) +
+  ggplot2::geom_bar(
+    ggplot2::aes(
+      y = percentage_mean
+    ), 
+    stat = "identity",
+    fill = "#cccccc"
+  ) + 
+  ggplot2::geom_text(
+    ggplot2::aes(
+      label = round(percentage_mean, 2)*100,
+      y = percentage_mean + max(percentage_mean)*0.03,
+    ),
+    size = 4
+  ) +
+  ggplot2::labs(
+    title = "All Family Leagues' Winnings",
+    subtitle = "ties count as half wins",
+    x = "Owner",
+    y = "Mean ESPN Win (%)"
+  ) +
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(size = 17),
+    plot.subtitle = ggplot2::element_text(size = 15, face = "italic"),
+    axis.title = ggplot2::element_text(hjust = 1, size = 15),
+    axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1, size = 13),
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    panel.background = ggplot2::element_blank(),
+    legend.position = "bottom",
+    legend.text = ggplot2::element_text(size = 13)
+  )
+
+historical_standings_final |> 
+  dplyr::group_by(person) |> 
+  dplyr::summarize(
+    total_wins = sum(wins),
+    total_losses = sum(losses),
+    total_ties = sum(ties),
+    total_games = sum(ties, losses, wins)
+  ) |> 
+  dplyr::ungroup() |> 
+  dplyr::mutate(
+    overall_win_percentage = (total_wins + 0.5*total_ties) / total_games
+  ) |> 
+  
+  ggplot2::ggplot(ggplot2::aes(forcats::fct_infreq(person, overall_win_percentage))) +
+  ggplot2::geom_bar(
+    ggplot2::aes(
+      y = overall_win_percentage
+    ), 
+    stat = "identity",
+    fill = "#cccccc"
+  ) + 
+  ggplot2::geom_text(
+    ggplot2::aes(
+      label = round(overall_win_percentage, 2)*100,
+      y = overall_win_percentage + max(overall_win_percentage)*0.03,
+    ),
+    size = 4
+  ) +
+  ggplot2::labs(
+    title = "All Family Leagues' Winning Rate",
+    subtitle = "ties count as half wins",
+    x = "Owner",
+    y = "Win (%)"
+  ) +
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(size = 17),
+    plot.subtitle = ggplot2::element_text(size = 15, face = "italic"),
+    axis.title = ggplot2::element_text(hjust = 1, size = 15),
+    axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1, size = 13),
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    panel.background = ggplot2::element_blank(),
+    legend.position = "bottom",
+    legend.text = ggplot2::element_text(size = 13)
+  )
+```
+
+```{r misc}
+historical_standings_final |> 
+  dplyr::group_by(person) |> 
+  dplyr::summarize(
+    years_played = dplyr::n()
+  ) |> 
+  dplyr::ungroup() |> 
+  dplyr::arrange(years_played)
 ```
